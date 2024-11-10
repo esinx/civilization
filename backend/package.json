@@ -1,0 +1,30 @@
+{
+	"name": "@eas2030.civilization/backend",
+	"module": "index.ts",
+	"type": "module",
+	"prettier": "@esinx/prettier-config",
+	"scripts": {
+		"start": "bun src/listen.bun.ts",
+		"dev": "NODE_ENV=development bun --watch src/listen.bun.ts",
+		"lint": "eslint ./src/*",
+		"lint:fix": "eslint ./src/* --fix"
+	},
+	"devDependencies": {
+		"@esinx/eslint-config": "^2.0.1",
+		"@esinx/prettier-config": "^1.0.0-3",
+		"@types/aws-lambda": "^8.10.145",
+		"@types/bun": "latest",
+		"tsx": "^4.19.2"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"@trpc/server": "^11.0.0-rc.608",
+		"dotenv": "^16.4.5",
+		"jose": "^5.8.0",
+		"superjson": "^2.2.1",
+		"znv": "^0.4.0",
+		"zod": "^3.23.8"
+	}
+}
