@@ -58,35 +58,37 @@ const AddUserForm: React.FC = () => {
 
 	return (
 		<div>
-			{game.players.map(player => (
-				<Card
-					key={player.id}
-					className={cn(
-						'flex',
-						'justify-start',
-						'items-center',
-						'mb-2',
-						'bg-gray-100',
-						'font-bold',
-						'shadow-none',
-						'p-4',
-					)}
-				>
-					<img
-						src={`/civ${hashToIcon(player.civilizationName)}.PNG`}
+			<div className={cn('grid', 'grid-cols-2', 'gap-2')}>
+				{game.players.map(player => (
+					<Card
+						key={player.id}
 						className={cn(
-							'w-[100px]',
-							'mr-2',
-							'aspect-square',
-							'animate-bounce-up',
+							'flex',
+							'justify-start',
+							'items-center',
+							'mb-2',
+							'bg-gray-100',
+							'font-bold',
+							'shadow-none',
+							'p-4',
 						)}
-						alt={`Icon ${hashToIcon(player.civilizationName)}`}
-					/>
-					<p className={cn('text-gray-800', 'text-center', 'text-xl')}>
-						{player.civilizationName}
-					</p>
-				</Card>
-			))}
+					>
+						<img
+							src={`/civ${hashToIcon(player.civilizationName)}.PNG`}
+							className={cn(
+								'w-[80px]',
+								'mr-2',
+								'aspect-square',
+								'animate-bounce-up',
+							)}
+							alt={`Icon ${hashToIcon(player.civilizationName)}`}
+						/>
+						<p className={cn('text-gray-800', 'text-center', 'text-xl')}>
+							{player.civilizationName}
+						</p>
+					</Card>
+				))}
+			</div>
 			<Form {...form}>
 				<form onSubmit={onSubmit} className={cn('flex', 'flex-col', 'gap-4')}>
 					<FormField
@@ -112,7 +114,7 @@ const AddUserForm: React.FC = () => {
 export const Lobby: React.FC = () => {
 	const { game, setGame } = useGame()
 	return (
-		<Card className={cn('w-[400px]')}>
+		<Card className={cn('min-w-[800px]')}>
 			<CardHeader className={cn('flex', 'items-center', 'relative')}>
 				<img
 					src="/logo.png"
@@ -124,7 +126,20 @@ export const Lobby: React.FC = () => {
 					)}
 				/>
 				<div className={cn('h-[100px]')} />
-				<h1 className={cn('text-3xl', 'font-bold')}>CODE OF EMPIRE</h1>
+				<h1
+					className={cn(
+						'text-3xl',
+						'font-extrabold',
+						'text-transparent',
+						'bg-gradient-to-r',
+						'from-pink-400',
+						'to-orange-300',
+						'bg-clip-text',
+					)}
+				>
+					CODE OF EMPIRE
+				</h1>
+				<div>an over-engineered game built just for EAS2030</div>
 			</CardHeader>
 			<CardContent>
 				<AddUserForm />

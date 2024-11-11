@@ -92,8 +92,20 @@ export const executeTurn = async (
 	return {
 		game: {
 			...game,
+			turn: game.turn + 1,
 			rounds: [...game.rounds, turnOutput],
 			state: GameState.PENDING_TURN,
+			players: game.players.map(player => {
+				const output = outputs.find(o => o.id === player.id)
+				if (!output) {
+					return player
+				}
+				return {
+					...player,
+					tokens: output.tokens,
+					events: output.events,
+				}
+			}),
 		},
 		output: turnOutput,
 	}

@@ -1,3 +1,4 @@
+import { CheckCircle, HelpCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -18,6 +19,8 @@ import {
 	$allocation,
 	Allocatable,
 	Allocation,
+	GameState,
+	Player,
 	PlayerInput,
 } from './core/game/game.state'
 import { executeTurn } from './core/game/reducers'
@@ -26,7 +29,7 @@ import { useGame } from './store/game'
 
 const $formData = z.object({
 	allocation: $allocation,
-	command: z.string().max(30),
+	command: z.string().max(30).min(1),
 })
 
 const ALLOCATABLE_LIST = [
@@ -55,7 +58,7 @@ const ALLOCATABLE_LIST = [
 
 const toDisplayAllocatable = (allocatable: Allocatable) =>
 	({
-		[Allocatable.SRD]: '🧪 Science R&D',
+		[Allocatable.SRD]: '🧪 Science R & D',
 		[Allocatable.MD]: '🪖 Military & Defense',
 		[Allocatable.EWT]: '🎓 Education & Workforce Training',
 		[Allocatable.IPW]: '🏢 Infrastructure & Public Works',
@@ -66,25 +69,23 @@ const toDisplayAllocatable = (allocatable: Allocatable) =>
 	}[allocatable])
 
 const UpdateRoundForm: React.FC<{
-	playerId: string
+	player: Player
+	value?: PlayerInput
 	onSubmit?: (data: PlayerInput) => void
 }> = props => {
-	const { game } = useGame()
-	const player = game.players.find(player => player.id === props.playerId)
-
+	const { player } = props
 	const form = useForm<z.infer<typeof $formData>>({
-		defaultValues: {
+		defaultValues: props.value ?? {
 			allocation: Object.fromEntries(
-				ALLOCATABLE_LIST.map(allocatable => [allocatable, 0]),
+				ALLOCATABLE_LIST.map(allocatable => [
+					allocatable,
+					Math.floor((player?.tokens ?? 0) / ALLOCATABLE_LIST.length),
+				]),
 			) as Allocation,
 			command: '',
 		},
+		mode: 'onChange',
 	})
-
-	if (!player) {
-		return null
-	}
-
 	const {
 		handleSubmit,
 		control,
@@ -148,9 +149,7 @@ const UpdateRoundForm: React.FC<{
 												{field.value}
 											</div>
 											<Button
-												disabled={
-													field.value === player.tokens || remaining === 0
-												}
+												disabled={remaining === 0}
 												variant="outline"
 												onClick={() => field.onChange(field.value + 1)}
 												className={cn('w-8', 'h-8')}
@@ -180,8 +179,10 @@ const UpdateRoundForm: React.FC<{
 							)}
 						/>
 						<Button
+							type="submit"
 							disabled={!isValid || remaining !== 0}
 							className={cn('w-full', 'mt-4')}
+							variant="secondary"
 						>
 							Allocate
 						</Button>
@@ -194,53 +195,146 @@ const UpdateRoundForm: React.FC<{
 
 export const Round: React.FC = () => {
 	const { game, setGame } = useGame()
+	const [displayedPlayerId, setDisplayedPlayerId] = useState<string | null>(
+		null,
+	)
 	const [playerInputs, setPlayerInputs] = useState<Record<string, PlayerInput>>(
 		{},
 	)
 
-	const onUpdateRound = (playerId: string, playerInput: PlayerInput) => {
-		setPlayerInputs(prevInputs => ({ ...prevInputs, [playerId]: playerInput }))
-	}
-
 	const onSubmit = async () => {
-		// TODO: does not handle invalid input
 		const flattenedPlayerInputs = Object.values(playerInputs)
+		setGame({
+			...game,
+			state: GameState.PENDING_EVENTS,
+		})
 		const turnOutput = await executeTurn(game, flattenedPlayerInputs)
 		setGame(turnOutput.game)
+		setPlayerInputs({})
+		setDisplayedPlayerId(null)
 	}
+
+	const displayedPlayer = game.players.find(p => p.id === displayedPlayerId)
+
+	const canStart =
+		game.state == GameState.PENDING_TURN &&
+		game.players.every(p => playerInputs[p.id])
 
 	return (
 		<div>
-			<div className={cn('w-[100vw]', 'h-[100vh]', 'p-8')}>
-				<h1 className={cn('text-3xl', 'font-bold', 'text-white')}>
-					ROUND {game.turn + 1}
-				</h1>
-				{game.rounds.length > 0 && <PlotSummary />}
+			<div className={cn('w-[100vw]', 'h-[100vh]', 'flex')}>
 				<div
 					className={cn(
-						'grid',
-						'grid-template-columns-[repeat(auto-fill,minmax(300px,1fr))]',
-						'gap-4',
-						'mt-4',
+						'w-[480px]',
+						'bg-white',
+						'flex-grow-0',
+						'flex-shrink-0',
+						'p-4',
 					)}
 				>
-					{game.players.map(player => (
-						<UpdateRoundForm
-							playerId={player.id}
-							onSubmit={(data: PlayerInput) => onUpdateRound(player.id, data)}
-						/>
-					))}
+					<h1
+						className={cn(
+							'text-2xl',
+							'font-extrabold',
+							'text-transparent',
+							'bg-gradient-to-r',
+							'from-pink-400',
+							'to-orange-300',
+							'bg-clip-text',
+						)}
+					>
+						ROUND {game.turn + 1}
+					</h1>
+					<div className={cn('mt-4')}>
+						<PlotSummary />
+					</div>
 				</div>
-			</div>
-			<div className={cn('fixed', 'bottom-0', 'left-8', 'right-8', 'z-10')}>
-				<Card className={cn('rounded-b-none')}>
-					<CardHeader>
-						<Button className={cn('w-full')} onClick={onSubmit} size="lg">
-							PROCEED
-						</Button>
-					</CardHeader>
-					<CardContent></CardContent>
-				</Card>
+				<div className={cn('flex-1', 'overflow-y-scroll', 'p-8')}>
+					<Card>
+						<CardContent className={cn('p-4')}>
+							<div className={cn('grid', 'gap-2', 'grid-cols-3')}>
+								{game.players.map(player => (
+									<div
+										key={player.id}
+										onClick={() => setDisplayedPlayerId(player.id)}
+										className={cn(
+											'flex',
+											'items-center',
+											'justify-between',
+											'py-2',
+											'px-4',
+											'bg-gray-100',
+											'border-2',
+											'border-gray-200',
+											displayedPlayerId === player.id && [
+												'border-primary',
+												'bg-white',
+												'shadow-md',
+											],
+											'rounded-md',
+											'cursor-pointer',
+										)}
+									>
+										<div className={cn('flex', 'items-center', 'gap-4')}>
+											<div
+												className={cn(
+													'font-bold',
+													'text-primary',
+													'tabular-nums',
+												)}
+											>
+												{player.tokens}
+											</div>
+											<div
+												className={cn('text-md', 'text-gray-700', 'font-bold')}
+											>
+												{player.civilizationName}
+											</div>
+										</div>
+										<div className={cn('flex', 'items-center', 'gap-4')}>
+											<div>
+												{typeof playerInputs[player.id] === 'undefined' ? (
+													<HelpCircle size={24} className="text-gray-500" />
+												) : (
+													<CheckCircle size={24} className="text-primary" />
+												)}
+											</div>
+										</div>
+									</div>
+								))}
+							</div>
+							<div>
+								<Button
+									onClick={onSubmit}
+									disabled={!canStart}
+									className={cn(
+										'w-full',
+										'mt-4',
+										canStart && ['animate-pulse'],
+									)}
+									size="lg"
+								>
+									Start Round
+								</Button>
+							</div>
+						</CardContent>
+					</Card>
+					{displayedPlayer && (
+						<div className={cn('mt-4')}>
+							<UpdateRoundForm
+								key={displayedPlayer.id}
+								player={displayedPlayer}
+								value={playerInputs[displayedPlayer.id]}
+								onSubmit={input =>
+									setPlayerInputs(prevInputs => ({
+										...prevInputs,
+										[displayedPlayer.id]: input,
+									}))
+								}
+							/>
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	)

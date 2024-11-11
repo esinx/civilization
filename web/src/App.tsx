@@ -18,10 +18,43 @@ const App: React.FC = () => {
 		>
 			{/* <div className={cn('h-[200vh]', 'bg-red-500')}>test</div> */}
 			{game.state == GameState.IDLE && <Lobby />}
-			{game.state == GameState.PENDING_TURN && <Round />}
-			{game.state == GameState.PENDING_EVENTS && (
+			{(game.state == GameState.PENDING_TURN ||
+				game.state == GameState.PENDING_EVENTS) && (
 				<>
-					<div>OpenAI is processing your turn. Please wait.</div>
+					{game.state == GameState.PENDING_EVENTS && (
+						<div
+							className={cn(
+								'h-[100vh]',
+								'w-[100vw]',
+								'fixed',
+								'top-0',
+								'left-0',
+								'bg-black',
+								'bg-opacity-50',
+								'flex',
+								'justify-center',
+								'items-center',
+								'z-50',
+								'backdrop-blur-md',
+							)}
+						>
+							<div
+								className={cn(
+									'bg-white',
+									'p-4',
+									'rounded-lg',
+									'flex',
+									'flex-col',
+									'items-center',
+									'font-bold',
+									'animate-pulse',
+								)}
+							>
+								Interesting things are happening...
+							</div>
+						</div>
+					)}
+					<Round />
 				</>
 			)}
 		</main>
