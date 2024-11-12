@@ -3,6 +3,7 @@ import { cn } from './lib/utils'
 import { useGame } from './store/game'
 import { Lobby } from './Lobby'
 import { Round } from './Round'
+import { Recap } from './Recap'
 
 const App: React.FC = () => {
 	const { game } = useGame()
@@ -16,8 +17,8 @@ const App: React.FC = () => {
 				'items-center',
 			)}
 		>
-			{/* <div className={cn('h-[200vh]', 'bg-red-500')}>test</div> */}
 			{game.state == GameState.IDLE && <Lobby />}
+			{game.state == GameState.COMPLETE && <Recap />}
 			{(game.state == GameState.PENDING_TURN ||
 				game.state == GameState.PENDING_EVENTS) && (
 				<>

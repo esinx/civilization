@@ -23,7 +23,7 @@ const RoundSummary: React.FC<{
 }> = ({ turnOutput }) => {
 	return (
 		<Tabs>
-			<TabsList>
+			<TabsList className={cn('overflow-auto', 'max-w-[100%]', 'h-auto')}>
 				{turnOutput.outputs.map(playerOutput => (
 					<TabsTrigger value={playerOutput.id}>
 						{playerOutput.civilizationName}

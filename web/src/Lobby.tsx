@@ -9,6 +9,7 @@ import { createPlayer } from './core/game/game'
 import { addPlayer, canStartGame, startGame } from './core/game/reducers'
 import { cn } from './lib/utils'
 import { useGame } from './store/game'
+import { Player } from './core/game/game.state'
 
 const $formData = z.object({
 	civilizationName: z.string(),
@@ -20,6 +21,33 @@ const hashToIcon = (name: string) => {
 		0,
 	)
 	return (hash % 9) + 1
+}
+
+const PlayerRow: React.FC<{ player: Player }> = props => {
+	return (
+		<Card
+			key={props.player.id}
+			className={cn(
+				'flex',
+				'justify-start',
+				'items-center',
+				'mb-2',
+				'bg-gray-100',
+				'font-bold',
+				'shadow-none',
+				'p-4',
+			)}
+		>
+			<img
+				src={`/civ${hashToIcon(props.player.civilizationName)}.PNG`}
+				className={cn('w-[80px]', 'mr-2', 'aspect-square', 'animate-bounce-up')}
+				alt={`Icon ${hashToIcon(props.player.civilizationName)}`}
+			/>
+			<p className={cn('text-gray-800', 'text-center', 'text-xl')}>
+				{props.player.civilizationName}
+			</p>
+		</Card>
+	)
 }
 
 const AddUserForm: React.FC = () => {
@@ -58,35 +86,17 @@ const AddUserForm: React.FC = () => {
 
 	return (
 		<div>
-			<div className={cn('grid', 'grid-cols-2', 'gap-2')}>
+			<div
+				className={cn(
+					'grid',
+					'grid-cols-2',
+					'gap-2',
+					'overflow-auto',
+					'max-h-[200px]',
+				)}
+			>
 				{game.players.map(player => (
-					<Card
-						key={player.id}
-						className={cn(
-							'flex',
-							'justify-start',
-							'items-center',
-							'mb-2',
-							'bg-gray-100',
-							'font-bold',
-							'shadow-none',
-							'p-4',
-						)}
-					>
-						<img
-							src={`/civ${hashToIcon(player.civilizationName)}.PNG`}
-							className={cn(
-								'w-[80px]',
-								'mr-2',
-								'aspect-square',
-								'animate-bounce-up',
-							)}
-							alt={`Icon ${hashToIcon(player.civilizationName)}`}
-						/>
-						<p className={cn('text-gray-800', 'text-center', 'text-xl')}>
-							{player.civilizationName}
-						</p>
-					</Card>
+					<PlayerRow player={player} />
 				))}
 			</div>
 			<Form {...form}>
