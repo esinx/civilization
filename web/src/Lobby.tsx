@@ -7,10 +7,12 @@ import { Form, FormField } from './components/ui/form'
 import { Input } from './components/ui/input'
 import { createPlayer } from './core/game/game'
 import { addPlayer, canStartGame, startGame } from './core/game/reducers'
-import { cn } from './lib/utils'
+import { cn, thanosBeforeAction } from './lib/utils'
 import { useGame } from './store/game'
 import { Player } from './core/game/game.state'
 import { hashToIcon } from './util'
+
+import React, { useRef, useEffect, useState } from 'react'
 
 const $formData = z.object({
 	civilizationName: z.string(),
@@ -119,8 +121,19 @@ const AddUserForm: React.FC = () => {
 
 export const Lobby: React.FC = () => {
 	const { game, setGame } = useGame()
+	const containerRef = useRef<HTMLDivElement | null>(null)
+
+	const handleStartGame = () => {
+		thanosBeforeAction({
+			thanosContainerRef: containerRef,
+			action: () => {
+				setGame(startGame(game))
+			},
+		})
+	}
+
 	return (
-		<Card className={cn('min-w-[800px]')}>
+		<Card ref={containerRef} className={cn('min-w-[800px]')}>
 			<CardHeader className={cn('flex', 'items-center', 'relative')}>
 				<img
 					src="/logo.png"
@@ -150,7 +163,7 @@ export const Lobby: React.FC = () => {
 			<CardContent>
 				<AddUserForm />
 				<Button
-					onClick={() => setGame(startGame(game))}
+					onClick={handleStartGame}
 					disabled={!canStartGame(game)}
 					className={cn('w-full', 'mt-4')}
 				>

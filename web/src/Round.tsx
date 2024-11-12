@@ -54,6 +54,16 @@ const ALLOCATABLE_LIST = [
 	Allocatable.TD,
 	Allocatable.ACNI,
 ]
+const allPrompts = [
+	'Plan for Q1',
+	'Marketing Strategy',
+	'Product Roadmap',
+	'Team Goals',
+	'Financial Forecast',
+	'Customer Feedback',
+	'Year-End Review',
+	// Add other prompts here as needed
+]
 
 /**
  *  {
@@ -106,9 +116,12 @@ const UpdateRoundForm: React.FC<{
 	} = form
 
 	const formAllocation = watch('allocation')
-	const remaining =
+	const commandValue = watch('command') || ''
+	const allocRemaining =
 		player.tokens -
 		Object.values(formAllocation).reduce((acc, val) => acc + val, 0)
+
+	const charsRemaining = 30 - commandValue.length // Track remaining characters
 
 	const onSubmit = handleSubmit(data =>
 		props.onSubmit?.({
@@ -123,7 +136,7 @@ const UpdateRoundForm: React.FC<{
 				<h1 className={cn('text-xl', 'font-bold')}>
 					{player.civilizationName}
 				</h1>
-				<p>Tokens Remaining {remaining}</p>
+				<p>Tokens Remaining {allocRemaining}</p>
 				<hr className={cn('border-t-2', 'border-gray-200', 'my-2')} />
 			</CardHeader>
 			<CardContent>
@@ -161,7 +174,7 @@ const UpdateRoundForm: React.FC<{
 												{field.value}
 											</div>
 											<Button
-												disabled={remaining === 0}
+												disabled={allocRemaining === 0}
 												variant="outline"
 												onClick={() => field.onChange(field.value + 1)}
 												className={cn('w-8', 'h-8')}
@@ -176,23 +189,80 @@ const UpdateRoundForm: React.FC<{
 						<FormField
 							control={control}
 							name="command"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Agenda</FormLabel>
-									<FormControl>
-										<Input
-											{...field}
-											placeholder="Enter your decade agenda"
-											className={cn('w-full')}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
+							render={({ field }) => {
+								const [suggestions, setSuggestions] = useState([])
+								const [showCreateOption, setShowCreateOption] = useState(false)
+
+								const handleInputChange = e => {
+									const inputValue = e.target.value
+									field.onChange(inputValue)
+
+									// Filter matching prompts or custom suggestion logic here
+									const matchingPrompts = allPrompts.filter(prompt =>
+										prompt.toLowerCase().includes(inputValue.toLowerCase()),
+									)
+									setSuggestions(matchingPrompts)
+
+									// Show "Create new" option if there are no exact matches
+									setShowCreateOption(!matchingPrompts.includes(inputValue))
+								}
+
+								const handleSuggestionClick = suggestion => {
+									field.onChange(suggestion)
+									setSuggestions([]) // Clear suggestions after selection
+									setShowCreateOption(false) // Hide "Create new" option
+								}
+
+								const handleCreateNew = () => {
+									field.onChange(field.value)
+									setSuggestions([])
+									setShowCreateOption(false)
+								}
+
+								return (
+									<FormItem>
+										<FormLabel>Agenda</FormLabel>
+										<FormControl>
+											<Input
+												{...field}
+												placeholder="Enter your decade agenda"
+												maxLength={30} // Limit input to 30 characters
+												className={cn('w-full')}
+												onChange={handleInputChange}
+											/>
+										</FormControl>
+										{suggestions.length > 0 && (
+											<ul className="bg-white border rounded shadow-lg max-h-40 overflow-auto">
+												{suggestions.map((suggestion, index) => (
+													<li
+														key={index}
+														onClick={() => handleSuggestionClick(suggestion)}
+														className="cursor-pointer p-2 hover:bg-gray-200"
+													>
+														{suggestion}
+													</li>
+												))}
+											</ul>
+										)}
+										{showCreateOption && (
+											<div
+												onClick={handleCreateNew}
+												className="cursor-pointer text-blue-600 mt-2"
+											>
+												Create new: <strong>{field.value}</strong>
+											</div>
+										)}
+										<p className="text-sm text-gray-500">
+											{charsRemaining} characters remaining
+										</p>
+										<FormMessage />
+									</FormItem>
+								)
+							}}
 						/>
 						<Button
 							type="submit"
-							disabled={!isValid || remaining !== 0}
+							disabled={!isValid || allocRemaining !== 0}
 							className={cn('w-full', 'mt-4')}
 							variant="secondary"
 						>
