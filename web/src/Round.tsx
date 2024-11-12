@@ -55,14 +55,10 @@ const ALLOCATABLE_LIST = [
 	Allocatable.ACNI,
 ]
 const allPrompts = [
-	'Plan for Q1',
-	'Marketing Strategy',
-	'Product Roadmap',
-	'Team Goals',
-	'Financial Forecast',
-	'Customer Feedback',
-	'Year-End Review',
-	// Add other prompts here as needed
+	'Wage a global war',
+	'Find extraterrestrial life',
+	'Subsidize technological advancement on chip design',
+	'Educate masses on importance of engineering ethics',
 ]
 
 /**
@@ -121,7 +117,7 @@ const UpdateRoundForm: React.FC<{
 		player.tokens -
 		Object.values(formAllocation).reduce((acc, val) => acc + val, 0)
 
-	const charsRemaining = 30 - commandValue.length // Track remaining characters
+	const charsRemaining = 50 - commandValue.length
 
 	const onSubmit = handleSubmit(data =>
 		props.onSubmit?.({
@@ -190,27 +186,25 @@ const UpdateRoundForm: React.FC<{
 							control={control}
 							name="command"
 							render={({ field }) => {
-								const [suggestions, setSuggestions] = useState([])
+								const [suggestions, setSuggestions] = useState<string[]>([])
 								const [showCreateOption, setShowCreateOption] = useState(false)
 
 								const handleInputChange = e => {
 									const inputValue = e.target.value
 									field.onChange(inputValue)
 
-									// Filter matching prompts or custom suggestion logic here
 									const matchingPrompts = allPrompts.filter(prompt =>
 										prompt.toLowerCase().includes(inputValue.toLowerCase()),
 									)
 									setSuggestions(matchingPrompts)
 
-									// Show "Create new" option if there are no exact matches
 									setShowCreateOption(!matchingPrompts.includes(inputValue))
 								}
 
 								const handleSuggestionClick = suggestion => {
 									field.onChange(suggestion)
-									setSuggestions([]) // Clear suggestions after selection
-									setShowCreateOption(false) // Hide "Create new" option
+									setSuggestions([])
+									setShowCreateOption(false)
 								}
 
 								const handleCreateNew = () => {
@@ -226,7 +220,7 @@ const UpdateRoundForm: React.FC<{
 											<Input
 												{...field}
 												placeholder="Enter your decade agenda"
-												maxLength={30} // Limit input to 30 characters
+												maxLength={50}
 												className={cn('w-full')}
 												onChange={handleInputChange}
 											/>
