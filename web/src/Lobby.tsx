@@ -10,18 +10,11 @@ import { addPlayer, canStartGame, startGame } from './core/game/reducers'
 import { cn } from './lib/utils'
 import { useGame } from './store/game'
 import { Player } from './core/game/game.state'
+import { hashToIcon } from './util'
 
 const $formData = z.object({
 	civilizationName: z.string(),
 })
-
-const hashToIcon = (name: string) => {
-	const hash = Array.from(name).reduce(
-		(acc, char) => acc + char.charCodeAt(0),
-		0,
-	)
-	return (hash % 9) + 1
-}
 
 const PlayerRow: React.FC<{ player: Player }> = props => {
 	return (
@@ -66,10 +59,9 @@ const AddUserForm: React.FC = () => {
 	} = form
 
 	const onSubmit = handleSubmit(data => {
+		const civilizationName = data.civilizationName.trim()
 		const existingPlayer = game.players.find(
-			player =>
-				player.civilizationName.toLowerCase() ===
-				data.civilizationName.toLowerCase(),
+			player => player.civilizationName.toLowerCase() === civilizationName,
 		)
 
 		if (existingPlayer) {
@@ -78,8 +70,12 @@ const AddUserForm: React.FC = () => {
 			)
 			return
 		}
+		if (civilizationName.length == 0) {
+			alert('Civilization name cannot be empty.')
+			return
+		}
 
-		const g = addPlayer(game, createPlayer(data.civilizationName))
+		const g = addPlayer(game, createPlayer(civilizationName))
 		setGame(g)
 		reset()
 	})

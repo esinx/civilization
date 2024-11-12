@@ -26,6 +26,18 @@ import {
 import { executeTurn } from './core/game/reducers'
 import { cn } from './lib/utils'
 import { useGame } from './store/game'
+import GameRules from './components/GameRules'
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from './components/ui/alert-dialog'
 
 const $formData = z.object({
 	allocation: $allocation,
@@ -166,11 +178,11 @@ const UpdateRoundForm: React.FC<{
 							name="command"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Command</FormLabel>
+									<FormLabel>Agenda</FormLabel>
 									<FormControl>
 										<Input
 											{...field}
-											placeholder="Enter your command"
+											placeholder="Enter your decade agenda"
 											className={cn('w-full')}
 										/>
 									</FormControl>
@@ -230,23 +242,64 @@ export const Round: React.FC = () => {
 						'flex-grow-0',
 						'flex-shrink-0',
 						'p-4',
+						'overflow-y-auto',
 					)}
 				>
-					<h1
+					<div
 						className={cn(
-							'text-2xl',
-							'font-extrabold',
-							'text-transparent',
-							'bg-gradient-to-r',
-							'from-pink-400',
-							'to-orange-300',
-							'bg-clip-text',
+							'justify-between',
+							'flex',
+							'content-center',
+							'items-center',
 						)}
 					>
-						ROUND {game.turn + 1}
-					</h1>
-					<div className={cn('mt-4')}>
-						<PlotSummary />
+						<h1
+							className={cn(
+								'text-2xl',
+								'font-extrabold',
+								'text-transparent',
+								'bg-gradient-to-r',
+								'from-pink-400',
+								'to-orange-300',
+								'bg-clip-text',
+							)}
+						>
+							ROUND {game.turn + 1}
+						</h1>
+						{game.turn != 0 && (
+							<>
+								<AlertDialog>
+									<AlertDialogTrigger asChild>
+										<Button variant="ghost" size="icon">
+											<HelpCircle size={24} className="text-gray-500" />
+										</Button>
+									</AlertDialogTrigger>
+									<AlertDialogContent
+										className={cn(
+											'w-[1000px]',
+											'max-w-screen',
+											'max-h-screen',
+											'overflow-auto',
+											'm-4',
+										)}
+									>
+										<AlertDialogHeader>
+											<AlertDialogTitle>Game Rules</AlertDialogTitle>
+											<AlertDialogDescription>
+												<GameRules />
+											</AlertDialogDescription>
+										</AlertDialogHeader>
+										<AlertDialogFooter>
+											<AlertDialogCancel>Sounds good!</AlertDialogCancel>
+										</AlertDialogFooter>
+									</AlertDialogContent>
+								</AlertDialog>
+							</>
+						)}
+					</div>
+
+					<div className={cn('my-4', 'h-full')}>
+						{game.turn == 0 ? <GameRules /> : <PlotSummary />}
 					</div>
 				</div>
 				<div className={cn('flex-1', 'overflow-y-scroll', 'p-8')}>
