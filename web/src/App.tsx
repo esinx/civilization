@@ -4,6 +4,7 @@ import { useGame } from './store/game'
 import { Round } from './Round'
 import { Recap } from './Recap'
 import { Lobby } from './Lobby'
+import LoadingScreen from './components/LoadingScreen'
 
 const ThanosFilter: React.FC = () => {
 	return (
@@ -76,39 +77,7 @@ const App: React.FC = () => {
 			{(game.state == GameState.PENDING_TURN ||
 				game.state == GameState.PENDING_EVENTS) && (
 				<>
-					{game.state == GameState.PENDING_EVENTS && (
-						<div
-							className={cn(
-								'h-screen',
-								'w-screen',
-								'fixed',
-								'top-0',
-								'left-0',
-								'bg-black',
-								'bg-opacity-50',
-								'flex',
-								'justify-center',
-								'items-center',
-								'z-50',
-								'backdrop-blur-md',
-							)}
-						>
-							<div
-								className={cn(
-									'bg-white',
-									'p-4',
-									'rounded-lg',
-									'flex',
-									'flex-col',
-									'items-center',
-									'font-bold',
-									'animate-pulse',
-								)}
-							>
-								Interesting things are happening...
-							</div>
-						</div>
-					)}
+					{game.state == GameState.PENDING_EVENTS && <LoadingScreen />}
 					<Round />
 				</>
 			)}
