@@ -10,8 +10,8 @@ export const Recap: React.FC = () => {
 	return (
 		<div
 			className={cn(
-				'w-[100vw]',
-				'h-[100vh]',
+				'w-screen',
+				'h-screen',
 				'flex',
 				'flex-col',
 				'items-center',

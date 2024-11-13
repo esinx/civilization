@@ -1,6 +1,7 @@
 import { PlayerOutput, TurnOutput } from '../core/game/game.state'
 import { cn } from '../lib/utils'
 import { useGame } from '../store/game'
+import { hashToIcon } from '../util'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 
@@ -23,10 +24,25 @@ const RoundSummary: React.FC<{
 }> = ({ turnOutput }) => {
 	return (
 		<Tabs>
-			<TabsList className={cn('overflow-auto', 'max-w-[100%]', 'h-auto')}>
+			<TabsList
+				className={cn(
+					'overflow-auto',
+					'max-w-[100%]',
+					'h-auto',
+					'sticky',
+					'top-0',
+				)}
+			>
 				{turnOutput.outputs.map(playerOutput => (
 					<TabsTrigger value={playerOutput.id}>
-						{playerOutput.civilizationName}
+						<div className={cn('flex', 'justify-center', 'items-center')}>
+							<img
+								src={`/civ${hashToIcon(playerOutput.civilizationName)}.PNG`}
+								className={cn('w-[40px]', 'mr-2', 'aspect-square')}
+								alt={`Icon ${hashToIcon(playerOutput.civilizationName)}`}
+							/>
+							<span>{playerOutput.civilizationName}</span>
+						</div>
 					</TabsTrigger>
 				))}
 			</TabsList>

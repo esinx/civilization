@@ -2,7 +2,6 @@ import { CheckCircle, HelpCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-
 import { PlotSummary } from './components/PlotSummary'
 import { Button } from './components/ui/button'
 import { Card, CardContent, CardHeader } from './components/ui/card'
@@ -14,7 +13,6 @@ import {
 	FormLabel,
 	FormMessage,
 } from './components/ui/form'
-import { Input } from './components/ui/input'
 import {
 	$allocation,
 	Allocatable,
@@ -29,7 +27,6 @@ import { useGame } from './store/game'
 import GameRules from './components/GameRules'
 import {
 	AlertDialog,
-	AlertDialogAction,
 	AlertDialogCancel,
 	AlertDialogContent,
 	AlertDialogDescription,
@@ -39,235 +36,8 @@ import {
 	AlertDialogTrigger,
 } from './components/ui/alert-dialog'
 
-const $formData = z.object({
-	allocation: $allocation,
-	command: z.string().max(30).min(1),
-})
-
-const ALLOCATABLE_LIST = [
-	Allocatable.SRD,
-	Allocatable.MD,
-	Allocatable.EWT,
-	Allocatable.IPW,
-	Allocatable.ESR,
-	Allocatable.HPS,
-	Allocatable.TD,
-	Allocatable.ACNI,
-]
-const allPrompts = [
-	'Wage a global war',
-	'Find extraterrestrial life',
-	'Subsidize technological advancement on chip design',
-	'Educate masses on importance of engineering ethics',
-]
-
-/**
- *  {
-	SRD = 'Science Research and Development',
-	MD = 'Military and Defense',
-	EWT = 'Education and Workforce Training',
-	IPW = 'Infrastructure and Public Works',
-	ESR = 'Environmental Sustainability and Resources',
-	HPS = 'Healthcare and Public Safety',
-	TD = 'Trade and Diplomacy',
-	ACNI = 'Arts, Culture, and National Identity',
- * 
- */
-
-const toDisplayAllocatable = (allocatable: Allocatable) =>
-	({
-		[Allocatable.SRD]: '🧪 Science R & D',
-		[Allocatable.MD]: '🪖 Military & Defense',
-		[Allocatable.EWT]: '🎓 Education & Workforce Training',
-		[Allocatable.IPW]: '🏢 Infrastructure & Public Works',
-		[Allocatable.ESR]: '🌳 Environmental Sustainability',
-		[Allocatable.HPS]: '🏥 Healthcare & Public Safety',
-		[Allocatable.TD]: '🤝 Trade & Diplomacy',
-		[Allocatable.ACNI]: '🎨 Arts & Culture',
-	}[allocatable])
-
-const UpdateRoundForm: React.FC<{
-	player: Player
-	value?: PlayerInput
-	onSubmit?: (data: PlayerInput) => void
-}> = props => {
-	const { player } = props
-	const form = useForm<z.infer<typeof $formData>>({
-		defaultValues: props.value ?? {
-			allocation: Object.fromEntries(
-				ALLOCATABLE_LIST.map(allocatable => [
-					allocatable,
-					Math.floor((player?.tokens ?? 0) / ALLOCATABLE_LIST.length),
-				]),
-			) as Allocation,
-			command: '',
-		},
-		mode: 'onChange',
-	})
-	const {
-		handleSubmit,
-		control,
-		formState: { isValid },
-		watch,
-	} = form
-
-	const formAllocation = watch('allocation')
-	const commandValue = watch('command') || ''
-	const allocRemaining =
-		player.tokens -
-		Object.values(formAllocation).reduce((acc, val) => acc + val, 0)
-
-	const charsRemaining = 50 - commandValue.length
-
-	const onSubmit = handleSubmit(data =>
-		props.onSubmit?.({
-			player,
-			...data,
-		}),
-	)
-
-	return (
-		<Card>
-			<CardHeader>
-				<h1 className={cn('text-xl', 'font-bold')}>
-					{player.civilizationName}
-				</h1>
-				<p>Tokens Remaining {allocRemaining}</p>
-				<hr className={cn('border-t-2', 'border-gray-200', 'my-2')} />
-			</CardHeader>
-			<CardContent>
-				<Form {...form}>
-					<form onSubmit={onSubmit}>
-						{ALLOCATABLE_LIST.map(allocatable => (
-							<FormField
-								control={control}
-								name={`allocation.${allocatable}`}
-								render={({ field }) => (
-									<div
-										className={cn('flex', 'justify-between', 'gap-4', 'mb-4')}
-									>
-										<label htmlFor={allocatable} className={cn('text-lg')}>
-											{toDisplayAllocatable(allocatable)}
-										</label>
-										<div className={cn('flex', 'items-center', 'gap-4')}>
-											<Button
-												disabled={field.value === 0}
-												variant="outline"
-												onClick={() => field.onChange(field.value - 1)}
-												className={cn('w-8', 'h-8')}
-											>
-												-
-											</Button>
-											<div
-												className={cn(
-													'text-lg',
-													'font-bold',
-													'w-12',
-													'text-center',
-													'tabular-nums',
-												)}
-											>
-												{field.value}
-											</div>
-											<Button
-												disabled={allocRemaining === 0}
-												variant="outline"
-												onClick={() => field.onChange(field.value + 1)}
-												className={cn('w-8', 'h-8')}
-											>
-												+
-											</Button>
-										</div>
-									</div>
-								)}
-							/>
-						))}
-						<FormField
-							control={control}
-							name="command"
-							render={({ field }) => {
-								const [suggestions, setSuggestions] = useState<string[]>([])
-								const [showCreateOption, setShowCreateOption] = useState(false)
-
-								const handleInputChange = e => {
-									const inputValue = e.target.value
-									field.onChange(inputValue)
-
-									const matchingPrompts = allPrompts.filter(prompt =>
-										prompt.toLowerCase().includes(inputValue.toLowerCase()),
-									)
-									setSuggestions(matchingPrompts)
-
-									setShowCreateOption(!matchingPrompts.includes(inputValue))
-								}
-
-								const handleSuggestionClick = suggestion => {
-									field.onChange(suggestion)
-									setSuggestions([])
-									setShowCreateOption(false)
-								}
-
-								const handleCreateNew = () => {
-									field.onChange(field.value)
-									setSuggestions([])
-									setShowCreateOption(false)
-								}
-
-								return (
-									<FormItem>
-										<FormLabel>Agenda</FormLabel>
-										<FormControl>
-											<Input
-												{...field}
-												placeholder="Enter your decade agenda"
-												maxLength={50}
-												className={cn('w-full')}
-												onChange={handleInputChange}
-											/>
-										</FormControl>
-										{suggestions.length > 0 && (
-											<ul className="bg-white border rounded shadow-lg max-h-40 overflow-auto">
-												{suggestions.map((suggestion, index) => (
-													<li
-														key={index}
-														onClick={() => handleSuggestionClick(suggestion)}
-														className="cursor-pointer p-2 hover:bg-gray-200"
-													>
-														{suggestion}
-													</li>
-												))}
-											</ul>
-										)}
-										{showCreateOption && (
-											<div
-												onClick={handleCreateNew}
-												className="cursor-pointer text-blue-600 mt-2"
-											>
-												Create new: <strong>{field.value}</strong>
-											</div>
-										)}
-										<p className="text-sm text-gray-500">
-											{charsRemaining} characters remaining
-										</p>
-										<FormMessage />
-									</FormItem>
-								)
-							}}
-						/>
-						<Button
-							type="submit"
-							disabled={!isValid || allocRemaining !== 0}
-							className={cn('w-full', 'mt-4')}
-							variant="secondary"
-						>
-							Allocate
-						</Button>
-					</form>
-				</Form>
-			</CardContent>
-		</Card>
-	)
-}
+import React from 'react'
+import UpdateRoundForm from './components/UpdateRoundForm'
 
 export const Round: React.FC = () => {
 	const { game, setGame } = useGame()
@@ -298,10 +68,10 @@ export const Round: React.FC = () => {
 
 	return (
 		<div>
-			<div className={cn('w-[100vw]', 'h-[100vh]', 'flex')}>
+			<div className={cn('w-screen', 'h-screen', 'flex')}>
 				<div
 					className={cn(
-						'w-[480px]',
+						'w-[36vw]',
 						'bg-white',
 						'flex-grow-0',
 						'flex-shrink-0',
@@ -345,6 +115,7 @@ export const Round: React.FC = () => {
 											'max-h-screen',
 											'overflow-auto',
 											'm-4',
+											'pb-4',
 										)}
 									>
 										<AlertDialogHeader>
@@ -362,7 +133,7 @@ export const Round: React.FC = () => {
 						)}
 					</div>
 
-					<div className={cn('my-4', 'h-full')}>
+					<div className={cn('my-4', 'max-h-screen', 'h-full')}>
 						{game.turn == 0 ? <GameRules /> : <PlotSummary />}
 					</div>
 				</div>

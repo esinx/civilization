@@ -2,9 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
 body {
-	@apply bg-gradient-to-t from-pink-400 to-orange-300 bg-no-repeat bg-cover;
+  height: 100%;
+  margin: 0;
 }
+
+#root {
+  height: 100%;
+}
+
+body,
+#root,
+main {
+  @apply bg-gradient-to-t from-pink-400 to-orange-300 bg-no-repeat bg-cover;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
 
 @layer base {
 	:root {

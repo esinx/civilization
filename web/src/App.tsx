@@ -63,8 +63,8 @@ const App: React.FC = () => {
 	return (
 		<main
 			className={cn(
-				'w-[100vw]',
-				'h-[100vh]',
+				'w-screen',
+				'h-screen',
 				'flex',
 				'justify-center',
 				'items-center',
@@ -79,8 +79,8 @@ const App: React.FC = () => {
 					{game.state == GameState.PENDING_EVENTS && (
 						<div
 							className={cn(
-								'h-[100vh]',
-								'w-[100vw]',
+								'h-screen',
+								'w-screen',
 								'fixed',
 								'top-0',
 								'left-0',

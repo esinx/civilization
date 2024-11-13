@@ -12,7 +12,23 @@ import { useGame } from './store/game'
 import { Player } from './core/game/game.state'
 import { hashToIcon } from './util'
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef } from 'react'
+import { Dice3Icon } from 'lucide-react'
+
+const generateRandomName = () => {
+	const names = [
+		'Atlantis',
+		'Eldoria',
+		'Avalon',
+		'Nirvana',
+		'Zion',
+		'Utopia',
+		'Arcadia',
+		'Eden',
+		'Xanadu',
+	]
+	return names[Math.floor(Math.random() * names.length)]
+}
 
 const $formData = z.object({
 	civilizationName: z.string(),
@@ -73,7 +89,6 @@ const AddUserForm: React.FC = () => {
 			return
 		}
 		if (civilizationName.length == 0) {
-			alert('Civilization name cannot be empty.')
 			return
 		}
 
@@ -103,16 +118,43 @@ const AddUserForm: React.FC = () => {
 						control={control}
 						name="civilizationName"
 						render={({ field }) => (
-							<Input {...field} placeholder="Enter your Civilization Name" />
+							<>
+								<div className={cn('flex', 'flex-col', 'gap-2', 'mt-2')}>
+									<div className={cn('flex', 'gap-2', 'mt-2')}>
+										<Input
+											{...field}
+											placeholder="Enter your Civilization Name"
+										/>
+										<Button
+											size="icon"
+											onClick={() => {
+												let randomName: string | undefined = undefined
+												const existingNames = new Set(
+													game.players.map(player =>
+														player.civilizationName.toLowerCase(),
+													),
+												)
+												do {
+													randomName = generateRandomName()
+												} while (existingNames.has(randomName.toLowerCase()))
+												field.onChange(randomName)
+												onSubmit()
+											}}
+										>
+											<Dice3Icon />
+										</Button>
+									</div>
+									<Button
+										type="submit"
+										disabled={!isValid}
+										className={cn('w-full')}
+									>
+										Join Game
+									</Button>
+								</div>
+							</>
 						)}
 					/>
-					<Button
-						type="submit"
-						disabled={!isValid}
-						className={cn('w-full', 'mt-2')}
-					>
-						Join Game
-					</Button>
 				</form>
 			</Form>
 		</div>
@@ -133,7 +175,7 @@ export const Lobby: React.FC = () => {
 	}
 
 	return (
-		<Card ref={containerRef} className={cn('min-w-[800px]')}>
+		<Card ref={containerRef} className={cn('min-w-[60vw]')}>
 			<CardHeader className={cn('flex', 'items-center', 'relative')}>
 				<img
 					src="/logo.png"
