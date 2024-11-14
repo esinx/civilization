@@ -13,12 +13,6 @@ const addUsers = (game: Game, names: string[]) =>
 	names.reduce((acc, name) => addPlayer(acc, createPlayer(name)), game)
 
 export const useGame = create<GameStore>()(set => ({
-	game: addUsers(initializeGame(), [
-		// 'Player 1',
-		// 'Player 2',
-		// 'Player 3',
-		// 'Player 4',
-		// 'Player 5',
-	]),
+	game: addUsers(initializeGame(), []),
 	setGame: (game: Game) => set({ game }),
 }))

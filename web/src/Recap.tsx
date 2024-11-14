@@ -11,15 +11,16 @@ export const Recap: React.FC = () => {
 		<div
 			className={cn(
 				'w-screen',
-				'h-screen',
+				'max-h-screen',
 				'flex',
 				'flex-col',
 				'items-center',
 				'justify-center',
-				'bg-gray-50',
+				'overflow-auto',
+				'p-y-24',
 			)}
 		>
-			<Card className={cn('w-[480px]', 'bg-white', 'p-6')}>
+			<Card className={cn('w-[64vw]', 'bg-white', 'h-full')}>
 				<CardHeader>
 					<h1
 						className={cn(
@@ -37,7 +38,15 @@ export const Recap: React.FC = () => {
 					</h1>
 				</CardHeader>
 				<CardContent>
-					<div className={cn('mt-4', 'text-center')}>
+					<div
+						className={cn(
+							'mt-4',
+							'max-w-screen',
+							'max-h-screen',
+							'h-[40vh]',
+							'overflow-auto',
+						)}
+					>
 						<PlotSummary />
 					</div>
 					<div className={cn('mt-6', 'grid', 'gap-4')}>
